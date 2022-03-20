@@ -214,13 +214,9 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                         DetR = math.sqrt((math.pow(self.data_xx[self.p]-self.data_xx[self.p-1], 2)+(math.pow(self.data_yy[self.p]-self.data_yy[self.p-1], 2))))
                         if (DetR > 0.1):
 
-                            print("---坐标更新-----")
-
                             self.x.append(self.data_xx[self.p])
                             self.y.append(self.data_yy[self.p])
                             self.curve.setData(self.x[:], self.y[:])
-                            self.curve_present.setData(self.x[self.p], self.y[self.p])
-
 
                         else:
                             pass
@@ -237,6 +233,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                         self.curve.setData(self.x[:], self.y[:])
                         send_data = str((self.x[0], self.y[0])).encode('utf-8')
                         udp_socket.sendto(send_data, other_addr)
+                        print('第一个坐标已发送')
                         udp_socket.close()
 
                     '''第一个描点为读取的第一个数值，第二个为2，3，4，5，6个读取的均值，防止坐标更新过快'''
