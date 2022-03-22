@@ -2,11 +2,10 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QDesktopWidg
 from camera_mini import Ui_mainWindow
 import pyqtgraph as pg
 import sys
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 import math
 import socket
 from threading import Thread
-
 
 class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -18,8 +17,8 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         '''
         super(mywindow, self).__init__(parent)
         self.setupUi(self)
-
         '''航向显示采用多线程'''
+
         self.udp = self.udpinit()
         self.t = Thread(target=self.getudpdata)
         self.t.setDaemon(True)
@@ -37,22 +36,26 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.ptr = 0
         self.p = -1
 
-        '''角度参数'''
+        '''角度参数初始化'''
         self.angel_para =[]
         self.angel_x_list = [0]
         self.angel_y_list = [0]
 
-        '''定时器1'''
+        '''定时器1画路线'''
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update_data)
-        # self.pyplotfsf画航向
-        self.timer.timeout.connect(self.pyplotfsf)
-        self.timer.start(500)
+        self.timer.start(1000)
 
-        '''定时器2'''
+        '''定时器2报警'''
         self.timer1 = pg.QtCore.QTimer()
         self.timer1.timeout.connect(self.Warning)
-        self.timer1.start(500)
+        self.timer1.start(1000)
+
+        '''定时器3画航向'''
+        self.flag = 0
+        self.timer2 = pg.QtCore.QTimer()
+        self.timer2.timeout.connect(self.pyplotfsf)
+        self.timer2.start(1000)
 
         '''设置屏幕靠右显示'''
         self.setCenter()
@@ -68,7 +71,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
     '''UDP初始化'''
     def udpinit(self):
         ip = ""
-        port = 8887
+        port = 6666
         own_addr = (ip, port)  # 接收方端口信息
         byte = 1024
         udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -77,7 +80,6 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
 
     '''接收对方主机发来的信号'''
     def getudpdata(self):
-
         while True:
             recv_data, other_addr = self.udp.recvfrom(1024)
             self.data = recv_data.decode("utf-8")
@@ -94,12 +96,10 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.angel = self.angel_para[-1]
         self.angel_to_x = math.cos(math.radians(self.angel))
         self.angel_to_y = math.sin(math.radians(self.angel))
-
         self.angel_x_list.append(self.angel_to_x)
         self.angel_y_list.append(self.angel_to_y)
         self.angel_x_list[1] = self.angel_to_x
         self.angel_y_list[1] = self.angel_to_y
-        # print('--angel_to_y---', self.angel_to_y[1])
         self.curve_angle_zero.setData(self.angel_x_list[:1], self.angel_y_list[:1])
         self.curve_angle.setData(self.angel_x_list[:2], self.angel_y_list[:2])
 
@@ -129,17 +129,10 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.pw.setRange(xRange=[0, 2.7], yRange=[0, 4.7])
         self.pw.setMouseEnabled(x=False, y=False)
         self.curve = self.pw.plot(pen=pg.mkPen(width=5, color=(30, 144, 255)), symbolBrush=(255, 69, 0), symbolSize=10)
-        self.curve_zero = self.pw.plot(symbolBrush=(0, 255, 0), symbolSize=20, symbol='t')
+        self.curve_zero = self.pw.plot(symbolBrush=(0, 255, 0), symbolSize=20)
         plot_display = self.findChild(QHBoxLayout, 'pyplot')
         plot_display.addWidget(self.pw)
         self.show()
-
-        ''''''
-        self.pw_present = pg.PlotWidget()
-        self.pw_present.setRange(xRange=[0, 2.7], yRange=[0, 4.7])
-        self.pw_present.setMouseEnabled(x=False, y=False)
-        self.curve_present = self.pw_present.plot(symbolBrush=(255, 0, 255), symbolSize=20)
-
 
         '''航向角模拟symbolSize=20, symbol=,, symbolBrush=(0, 255, 0)'''''
         self.pw_angle = pg.PlotWidget()
@@ -167,7 +160,6 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
 
         with open('D:\Robot_path\position_para.txt', mode='r', encoding='ANSI') as f1:
             self.s = f1.readline()
-            # print("---坐标更新-----", self.s)
             number_str = self.s[1:-2]
             t = -1
             for i in number_str:
@@ -193,10 +185,8 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
             if length > 1:
                 if self.data_x[length-2] != self.data_x[length-1] or self.data_y[length-2] != self.data_y[length-1]:
                     self.p += 1
-                    # print("22222", self.p)
                     self.data_xx.append(position_x)
                     self.data_yy.append(position_y)
-                    # self.curve.setData(self.data_xx[:], self.data_yy[:])
                     '''当第6个点出现后，对数组从后往前求五个坐标的均值,'''
                     # if self.p >= 5:
                     #     xxx = (self.data_xx[-5] + self.data_xx[-4] + self.data_xx[-3] + self.data_xx[-2] + self.data_xx[-1])/5
@@ -212,7 +202,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                     '''阈值方式更新坐标'''
                     if (self.p > 0):
                         DetR = math.sqrt((math.pow(self.data_xx[self.p]-self.data_xx[self.p-1], 2)+(math.pow(self.data_yy[self.p]-self.data_yy[self.p-1], 2))))
-                        if (DetR > 0.1):
+                        if (DetR > 0.1) and (DetR < 1.0):
 
                             self.x.append(self.data_xx[self.p])
                             self.y.append(self.data_yy[self.p])
@@ -221,8 +211,8 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                         else:
                             pass
                     else:
-                        ip = "192.168.199.141"  # 确定对方ip和端口号，除1024以外的端口均可使用
-                        port = 8000
+                        ip = "192.168.0.10"  # 确定对方ip和端口号，除1024以外的端口均可使用
+                        port = 6667
                         other_addr = (ip, port)
                         udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                         '''此处为第一个点的坐标，需要通过UDP通信协议传输给个机器人,写完退出当前UDP端口'''
@@ -233,7 +223,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                         self.curve.setData(self.x[:], self.y[:])
                         send_data = str((self.x[0], self.y[0])).encode('utf-8')
                         udp_socket.sendto(send_data, other_addr)
-                        print('第一个坐标已发送')
+                        print('第一个坐标已发送到对方主机端口')
                         udp_socket.close()
 
                     '''第一个描点为读取的第一个数值，第二个为2，3，4，5，6个读取的均值，防止坐标更新过快'''
@@ -251,18 +241,22 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
 
                     '''报警显示和弹窗警告段'''
                     if self.data_x[length-1] <= 0.3 or self.data_x[length-1] >= 2.4 or self.data_y[length-1] <= 0.3 or self.data_y[length-1] >= 4.4:
-                        self.warning_inf.setText("请暂停前行")
-                        self.warning_inf.setStyleSheet("color:red;border:1px solid white;font-size:20px;")
+                        self.warning_inf.setText("警告")
+                        self.warning_inf.setStyleSheet("color:red;border:1px solid white;font-size:30px;")
                         self.timer_start()
                     else:
                         self.warning_inf.setText("正常")
-                        self.warning_inf.setStyleSheet("color:green;border:1px solid white;font-size:20px;")
+                        self.warning_inf.setStyleSheet("color:green;border:1px solid white;font-size:30px;")
+
             else:
                 '''
-                此处代码的存在与否，可以认定是否设置(0,0)点为起点;
+                此段代码的存在与否，可以认定是否设置(0,0)点为起点;
                 若为pass则视起点为开启声呐得到的第一个坐标
                 '''
                 # pass
+                self.warning_inf.setText("正常")
+                self.warning_inf.setStyleSheet("color:green;border:1px solid white;font-size:30px;")
+
                 # self.data_xx.append(position_x)
                 # self.data_yy.append(position_y)
                 # self.curve.setData(self.data_xx[:], self.data_yy[:])
@@ -278,8 +272,9 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
             x = self.data_xx[self.p]
             y = self.data_yy[self.p]
             if x <= 0.3 or x >= 2.4 or y <= 0.3 or y >= 4.4:
-                self.show_message(self.timeclick)
-
+                if self.flag == 0:
+                    self.flag = 1
+                    self.show_message()
             else:
                 pass
 
@@ -303,11 +298,12 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                 # self.nomal_inf.setText("正常")
                 # pass
 
-    def show_message(self, timeclick):
-        a = QtWidgets.QMessageBox.information(self, "警告", "请操控机器人到达安全区域!!!",
-                                QtWidgets.QMessageBox.Yes)
-        if a == QtWidgets.QMessageBox.Yes:
-            timeclick()
+    def show_message(self):
+            b = QtWidgets.QMessageBox.information(self, "警告", "请操控机器人到达安全区域!!!",
+                                    QtWidgets.QMessageBox.Yes)
+            if b == QtWidgets.QMessageBox.Yes:
+                self.flag = 0
+                self.timeclick()
 
     def setCenter(self):
         '''
@@ -329,6 +325,8 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
             event.ignore()
 
 if __name__ == '__main__':
+    '''高分辨率自适应'''
+    QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     app = QApplication(sys.argv)
     test_ui = mywindow()
     test_ui.show()

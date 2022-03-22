@@ -12,7 +12,7 @@ class Ui_mainWindow(object):
     def setupUi(self, mainWindow):
         mainWindow.setObjectName("mainWindow")
         mainWindow.setEnabled(True)
-        mainWindow.resize(536, 1037)
+        mainWindow.resize(520, 1080)
         mainWindow.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "border-color: rgb(0, 0, 0);")
         self.centralwidget = QtWidgets.QWidget(mainWindow)
@@ -35,13 +35,13 @@ class Ui_mainWindow(object):
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
         self.label_3.setObjectName("label_3")
         self.xy_text = QtWidgets.QTextBrowser(self.para_list)
-        self.xy_text.setGeometry(QtCore.QRect(80, 70, 161, 41))
+        self.xy_text.setGeometry(QtCore.QRect(90, 80, 161, 41))
         self.xy_text.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "border:1px solid white;\n"
 "font: 13pt \"宋体\";")
         self.xy_text.setObjectName("xy_text")
         self.lineEdit = QtWidgets.QLineEdit(self.para_list)
-        self.lineEdit.setGeometry(QtCore.QRect(250, 80, 31, 20))
+        self.lineEdit.setGeometry(QtCore.QRect(250, 90, 31, 20))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
@@ -54,7 +54,7 @@ class Ui_mainWindow(object):
 "border:1px solid white;")
         self.lineEdit.setObjectName("lineEdit")
         self.label_5 = QtWidgets.QLabel(self.para_list)
-        self.label_5.setGeometry(QtCore.QRect(10, 70, 71, 31))
+        self.label_5.setGeometry(QtCore.QRect(10, 80, 81, 31))
         font = QtGui.QFont()
         font.setFamily("宋体")
         font.setPointSize(14)
@@ -67,7 +67,7 @@ class Ui_mainWindow(object):
 "border:1px solid white;")
         self.label_5.setObjectName("label_5")
         self.label_6 = QtWidgets.QLabel(self.para_list)
-        self.label_6.setGeometry(QtCore.QRect(10, 140, 111, 31))
+        self.label_6.setGeometry(QtCore.QRect(10, 140, 71, 31))
         font = QtGui.QFont()
         font.setFamily("宋体")
         font.setPointSize(14)
@@ -80,7 +80,7 @@ class Ui_mainWindow(object):
 "border:1px solid white;")
         self.label_6.setObjectName("label_6")
         self.warning_inf = QtWidgets.QTextBrowser(self.para_list)
-        self.warning_inf.setGeometry(QtCore.QRect(130, 130, 131, 41))
+        self.warning_inf.setGeometry(QtCore.QRect(90, 130, 181, 51))
         self.warning_inf.setStyleSheet("border-color: rgb(255, 255, 255);\n"
 "border:1px solid white;\n"
 "font: 13pt \"宋体\";\n"
@@ -126,7 +126,7 @@ class Ui_mainWindow(object):
         self.label_7.setObjectName("label_7")
         mainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(mainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 536, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 520, 26))
         self.menubar.setObjectName("menubar")
         mainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(mainWindow)
@@ -138,11 +138,11 @@ class Ui_mainWindow(object):
 
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
-        mainWindow.setWindowTitle(_translate("mainWindow", "清淤机器人路线模拟及航向显示应用程序"))
+        mainWindow.setWindowTitle(_translate("mainWindow", "清淤机器人路线模拟及航向显示"))
         self.label_3.setText(_translate("mainWindow", "当前坐标及运行状态"))
         self.lineEdit.setText(_translate("mainWindow", "m"))
         self.label_5.setText(_translate("mainWindow", "(x,y)："))
-        self.label_6.setText(_translate("mainWindow", "运行状态："))
+        self.label_6.setText(_translate("mainWindow", "状态："))
         self.label_4.setText(_translate("mainWindow", "斜坡侧"))
         self.label_7.setText(_translate("mainWindow", "航向"))
 
