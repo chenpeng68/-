@@ -35,6 +35,10 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.y = []
         self.ptr = 0
         self.p = -1
+        self.datax1 = ''
+        self.datay1 = ''
+
+
 
         '''角度参数初始化'''
         self.angel_para =[]
@@ -104,10 +108,12 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.curve_angle.setData(self.angel_x_list[:2], self.angel_y_list[:2])
 
     def InitUI(self):
-        '''程序启动时，首先将position_para.txt文件清空'''
+
+        '''程序启动时，首先将position_para.txt文件清空,写入(0.00,0.00)'''
         f1_original = open('D:\Robot_path\position_para.txt', mode='w')
         f1_original.write("(0.00,0.00)")
         f1_original.close()
+
         '''
         plot控件创建
         全局参数设定
@@ -117,6 +123,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         pg.setConfigOptions(leftButtonPan=True)
         pg.setConfigOption('background', 'w')
         pg.setConfigOption('foreground', 'k')
+
         '''
         初始化线路模拟控件
         self.pw.plot(pen=(0, 255, 0)) 设置线条的颜色
@@ -160,7 +167,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
 
         with open('D:\Robot_path\position_para.txt', mode='r', encoding='ANSI') as f1:
             self.s = f1.readline()
-            number_str = self.s[1:-2]
+            number_str = self.s[1:-1]
             t = -1
             for i in number_str:
                 t += 1
@@ -169,9 +176,9 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
             x = number_str[0:w]
             y = number_str[w+1:]
             x_number = float(x)
-            position_x = round(x_number, 2)
+            position_x = float('%.2f' % x_number)
             y_number = float(y)
-            position_y = round(y_number, 2)
+            position_y = float('%.2f' % y_number)
             self.xy_text.setText(str(((position_x), (position_y))))
             self.data_x.append(position_x)
             self.data_y.append(position_y)
@@ -202,14 +209,15 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                     '''阈值方式更新坐标'''
                     if (self.p > 0):
                         DetR = math.sqrt((math.pow(self.data_xx[self.p]-self.data_xx[self.p-1], 2)+(math.pow(self.data_yy[self.p]-self.data_yy[self.p-1], 2))))
-                        if (DetR > 0.1) and (DetR < 1.0):
-
+                        if (DetR > 0.1) and (DetR < 0.8):
                             self.x.append(self.data_xx[self.p])
                             self.y.append(self.data_yy[self.p])
                             self.curve.setData(self.x[:], self.y[:])
 
                         else:
+
                             pass
+
                     else:
                         ip = "192.168.0.10"  # 确定对方ip和端口号，除1024以外的端口均可使用
                         port = 6667
@@ -221,7 +229,13 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
                         '''绘制起点'''
                         self.curve_zero.setData(self.x[:], self.y[:])
                         self.curve.setData(self.x[:], self.y[:])
-                        send_data = str((self.x[0], self.y[0])).encode('utf-8')
+
+                        xx0 = str(self.x[0])
+                        strx = xx0.ljust(5, '0')
+                        yy0 = str(self.y[0])
+                        stry = yy0.ljust(5, '0')
+                        str_xy = strx + stry
+                        send_data = str_xy.encode('utf-8')
                         udp_socket.sendto(send_data, other_addr)
                         print('第一个坐标已发送到对方主机端口')
                         udp_socket.close()
