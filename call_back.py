@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets, QtCore
 import math
 import socket
 from threading import Thread
+# import time
 
 class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
     def __init__(self, parent=None):
@@ -13,7 +14,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.data_y = [],self.data_x = []为读取的实时坐标，供warning函数去判断警告状态
         self.data_yy = []，self.data_xx = []用于存储一系列不同的坐标，供绘图使用
         利用self.data_yy、self.data_xx设置机器人的固定的起点
-        1000=1毫秒,刷新执行时间
+        1000=1秒,刷新执行时间
         '''
         super(mywindow, self).__init__(parent)
         self.setupUi(self)
@@ -38,14 +39,13 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.datax1 = ''
         self.datay1 = ''
 
-
-
         '''角度参数初始化'''
         self.angel_para =[]
         self.angel_x_list = [0]
         self.angel_y_list = [0]
 
         '''定时器1画路线'''
+        self.time_to_data = 0
         self.timer = pg.QtCore.QTimer()
         self.timer.timeout.connect(self.update_data)
         self.timer.start(1000)
@@ -54,6 +54,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         self.timer1 = pg.QtCore.QTimer()
         self.timer1.timeout.connect(self.Warning)
         self.timer1.start(1000)
+        # self.st1 = time.time()
 
         '''定时器3画航向'''
         self.flag = 0
@@ -164,7 +165,9 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
         读取非UTF-8编码的文本文件，需要给open()函数传入encoding参数
         position_x = round(x_number, 2)*0.0085表示将读取的x像素坐标先保留两位小数，然后再乘上像素比例0.0085
         '''
-
+        self.time_to_data = self.time_to_data + 1
+        # st2 = time.time()
+        # print("时间过了：", st2 - self.st1)
         with open('D:\Robot_path\position_para.txt', mode='r', encoding='ANSI') as f1:
             self.s = f1.readline()
             number_str = self.s[1:-1]
@@ -183,6 +186,25 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
             self.data_x.append(position_x)
             self.data_y.append(position_y)
             length = len(self.data_x)
+            #十分钟发一次坐标给陀螺仪
+            #self.time_to_data == 100代表设置100s发送数据，此处设10分钟发送一次
+            if self.time_to_data == 600:
+                ip = "192.168.0.10"  # 确定对方ip和端口号，除1024以外的端口均可使用
+
+                # ip = '192.168.199.175'
+                port = 6667
+                other_addr = (ip, port)
+                udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                xx0 = str(position_x)
+                strx = xx0.ljust(5, '0')
+                yy0 = str(position_y)
+                stry = yy0.ljust(5, '0')
+                str__xy = strx + stry
+                send_data = str__xy.encode('utf-8')
+                udp_socket.sendto(send_data, other_addr)
+                self.time_to_data = 0
+                print('时间间隔到坐标已发送到对方主机端口', )
+                udp_socket.close()
 
             '''
             此处判断读取的坐标是否相同，若相同，则不将坐标append到数组中；否则将参数加到数组末尾
@@ -220,6 +242,7 @@ class mywindow(QMainWindow, Ui_mainWindow, QtWidgets.QWidget):
 
                     else:
                         ip = "192.168.0.10"  # 确定对方ip和端口号，除1024以外的端口均可使用
+                        # ip = '192.168.199.175'
                         port = 6667
                         other_addr = (ip, port)
                         udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

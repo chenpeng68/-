@@ -1,22 +1,23 @@
-# 文件同时读写冲突实验
+# # 文件同时读写冲突实验
 import time
 import math
 import random
-# a = 10
-# b = 20
-i = 0
-while i<10000:
-    # x= x+10
-    # x = (a+x)/(x+1)-0.2
-    # y = x - 1 + b/2.5
-    time.sleep(2)
+# i = 0
+# while i < 10000:
+#     time.sleep(2)
+#     x = float(random.uniform(0.0, 2.7))
+#     y = float(random.uniform(0.0, 4.7))
+#     with open('D:\Robot_path\position_para.txt', mode='w') as f:
+#         f.write(str((x, y)))
+#         print('--(x,y)--', (x, y))
+#     i = i+1
 
-    x = float(random.uniform(0.0, 2.7))
-    y = float(random.uniform(0.0, 4.7))
-    with open('D:\Robot_path\position_para.txt', mode='w') as f:
-        f.write(str((x, y)))
-        print('--(x,y)--', (x, y))
-    i = i+1
+
+# a=str(1.535)
+# b=str(12.4523)
+# print('a+b', a+b)
+# print('len(a+b)', len(a+b))
+
 
 
 
@@ -404,48 +405,68 @@ while i<10000:
 #         plt.text(end[0],end[1],s = i + 1,fontsize = 18,color = 'red')
 
 
-'''UDP通信'''
+# '''UDP通信'''
 # import socket
 # def main():
 #
-#    ip = "192.168.199.141"  # 对方ip和端口
-#    port = 8888
+#    ip = "192.168.199.175"  # 对方ip和端口
+#    port = 8887
 #    other_addr = (ip, port)
 #    byte = 1024
 #    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#
+#    p = 0.0
 #    while True:
-#        send_data = input("输入要发送的信息:").encode("utf-8")
+#        p = p + 10.0
+#        print('------发送角度信息-------', p)
+#        send_data = str(p).encode("utf-8")
 #        udp_socket.sendto(send_data, other_addr)
 #        """输入数据为空退出,否则进入接收状态"""
-#        if send_data:
-#            recv_data, other_addr = udp_socket.recvfrom(byte)
-#            print("收到来自%s的消息: %s" % (other_addr, recv_data.decode("utf-8")))
-#        else:
-#            break
-#    udp_socket.close()
+#        if p >= 360:
+#            p = 0
+#        # recv_data, other_addr = udp_socket.recvfrom(byte)
+#        # print("收到来自%s的消息: %s" % (other_addr, recv_data.decode("utf-8")))
+#        # else:
+#        #     break
+#    # udp_socket.close()
 # if __name__ == '__main__':
 #    main()
 
-# import socket
-#
-# def main():
-#     ip = ""
-#     port = 8887
-#     own_addr = (ip, port)  # 接收方端口信息
-#     byte = 1024
-#     udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#     udp_socket.bind(own_addr)  # 绑定端口信息
-#     p = 0
-#     print('%%%%%',p)
-#     while True:
-#         p = p+1
-#         print('----', p)
-#         recv_data, other_addr = udp_socket.recvfrom(byte)
-#         print("收到来自%s的消息: %s" % (other_addr, recv_data.decode("utf-8")))
-#
-# if __name__ == '__main__':
-#     main()
+import socket
+from threading import Thread
+
+def main():
+    ip = ""
+    port = 6667
+    own_addr = (ip, port)  # 接收方端口信息
+    byte = 1024
+    udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udp_socket.bind(own_addr)  # 绑定端口信息
+    p = 0
+    print('%%%%%',p)
+    while True:
+        p = p+1
+        print('----', p)
+        recv_data, other_addr = udp_socket.recvfrom(byte)
+        print("收到来自%s的消息: %s" % (other_addr, recv_data.decode("utf-8")))
+
+def number():
+    i = 0
+    while i < 2000:
+        time.sleep(2)
+        x = float(random.uniform(0.0, 2.7))
+        y = float(random.uniform(0.0, 4.7))
+        with open('D:\Robot_path\position_para.txt', mode='w') as f:
+            f.write(str((x, y)))
+            print('--(x,y)--', (x, y))
+        i = i + 1
+
+
+if __name__ == '__main__':
+    t = Thread(target=main)
+    s = Thread(target=number)
+    t.start()
+    s.start()
+    # main()
 
 
 
